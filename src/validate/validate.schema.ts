@@ -149,6 +149,16 @@ export const textMessageSchema: JSONSchema7 = {
   required: ['textMessage', 'number'],
 };
 
+export const presenceSchema: JSONSchema7 = {
+  $id: v4(),
+  type: 'object',
+  properties: {
+    number: { ...numberDefinition },
+    options: { ...optionsSchema, required: ['presence', 'delay'] },
+  },
+  required: ['options', 'number'],
+};
+
 export const pollMessageSchema: JSONSchema7 = {
   $id: v4(),
   type: 'object',
@@ -879,8 +889,10 @@ export const chatwootSchema: JSONSchema7 = {
     token: { type: 'string' },
     url: { type: 'string' },
     sign_msg: { type: 'boolean', enum: [true, false] },
+    sign_delimiter: { type: ['string', 'null'] },
     reopen_conversation: { type: 'boolean', enum: [true, false] },
     conversation_pending: { type: 'boolean', enum: [true, false] },
+    auto_create: { type: 'boolean', enum: [true, false] },
   },
   required: ['enabled', 'account_id', 'token', 'url', 'sign_msg', 'reopen_conversation', 'conversation_pending'],
   ...isNotEmpty('account_id', 'token', 'url', 'sign_msg', 'reopen_conversation', 'conversation_pending'),
@@ -945,6 +957,49 @@ export const websocketSchema: JSONSchema7 = {
 };
 
 export const rabbitmqSchema: JSONSchema7 = {
+  $id: v4(),
+  type: 'object',
+  properties: {
+    enabled: { type: 'boolean', enum: [true, false] },
+    events: {
+      type: 'array',
+      minItems: 0,
+      items: {
+        type: 'string',
+        enum: [
+          'APPLICATION_STARTUP',
+          'QRCODE_UPDATED',
+          'MESSAGES_SET',
+          'MESSAGES_UPSERT',
+          'MESSAGES_UPDATE',
+          'MESSAGES_DELETE',
+          'SEND_MESSAGE',
+          'CONTACTS_SET',
+          'CONTACTS_UPSERT',
+          'CONTACTS_UPDATE',
+          'PRESENCE_UPDATE',
+          'CHATS_SET',
+          'CHATS_UPSERT',
+          'CHATS_UPDATE',
+          'CHATS_DELETE',
+          'GROUPS_UPSERT',
+          'GROUP_UPDATE',
+          'GROUP_PARTICIPANTS_UPDATE',
+          'CONNECTION_UPDATE',
+          'CALL',
+          'NEW_JWT_TOKEN',
+          'TYPEBOT_START',
+          'TYPEBOT_CHANGE_STATUS',
+          'CHAMA_AI_ACTION',
+        ],
+      },
+    },
+  },
+  required: ['enabled'],
+  ...isNotEmpty('enabled'),
+};
+
+export const sqsSchema: JSONSchema7 = {
   $id: v4(),
   type: 'object',
   properties: {

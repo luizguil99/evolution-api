@@ -1,6 +1,6 @@
-FROM node:20.7.0-alpine
+FROM node:20.7.0-alpine AS builder
 
-LABEL version="1.5.4" description="Api to control whatsapp features through http requests." 
+LABEL version="1.6.1" description="Api to control whatsapp features through http requests." 
 LABEL maintainer="Davidson Gomes" git="https://github.com/DavidsonGomes"
 LABEL contact="contato@agenciadgcode.com"
 
@@ -11,9 +11,19 @@ WORKDIR /evolution
 
 COPY ./package.json .
 
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+FROM node:20.7.0-alpine AS final
+
 ENV TZ=America/Sao_Paulo
 ENV DOCKER_ENV=true
 
+ENV SERVER_TYPE=http
+ENV SERVER_PORT=8080
 ENV SERVER_URL=http://localhost:8080
 
 ENV CORS_ORIGIN=*
@@ -56,12 +66,20 @@ ENV RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672
 
 ENV WEBSOCKET_ENABLED=false
 
+ENV SQS_ENABLED=false
+ENV SQS_ACCESS_KEY_ID=
+ENV SQS_SECRET_ACCESS_KEY=
+ENV SQS_ACCOUNT_ID=
+ENV SQS_REGION=
+
 ENV WEBHOOK_GLOBAL_URL=
 ENV WEBHOOK_GLOBAL_ENABLED=false
 
 ENV WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
 
 ENV WEBHOOK_EVENTS_APPLICATION_STARTUP=false
+ENV WEBHOOK_EVENTS_INSTANCE_CREATE=false
+ENV WEBHOOK_EVENTS_INSTANCE_DELETE=false
 ENV WEBHOOK_EVENTS_QRCODE_UPDATED=true
 ENV WEBHOOK_EVENTS_MESSAGES_SET=true
 ENV WEBHOOK_EVENTS_MESSAGES_UPSERT=true
@@ -98,6 +116,8 @@ ENV CONFIG_SESSION_PHONE_NAME=Chrome
 ENV QRCODE_LIMIT=30
 ENV QRCODE_COLOR=#198754
 
+ENV TYPEBOT_API_VERSION=latest
+
 ENV AUTHENTICATION_TYPE=apikey
 
 ENV AUTHENTICATION_API_KEY=B6D711FCDE4D4FD5936544120E713976
@@ -114,10 +134,8 @@ ENV AUTHENTICATION_INSTANCE_CHATWOOT_ACCOUNT_ID=1
 ENV AUTHENTICATION_INSTANCE_CHATWOOT_TOKEN=123456
 ENV AUTHENTICATION_INSTANCE_CHATWOOT_URL=<url>
 
-RUN npm install
+WORKDIR /evolution
 
-COPY . .
-
-RUN npm run build
+COPY --from=builder /evolution .
 
 CMD [ "node", "./dist/src/main.js" ]

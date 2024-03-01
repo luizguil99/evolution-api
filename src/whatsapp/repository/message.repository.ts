@@ -91,11 +91,13 @@ export class MessageRepository extends Repository {
       this.logger.verbose('finding messages');
       if (this.dbSettings.ENABLED) {
         this.logger.verbose('finding messages in db');
-        if (query?.where?.key) {
-          for (const [k, v] of Object.entries(query.where.key)) {
-            query.where['key.' + k] = v;
+        for (const [o, p] of Object.entries(query?.where)) {
+          if (typeof p === 'object' && p !== null && !Array.isArray(p)) {
+            for (const [k, v] of Object.entries(p)) {
+              query.where[`${o}.${k}`] = v;
+            }
+            delete query.where[o];
           }
-          delete query?.where?.key;
         }
 
         return await this.messageModel
@@ -142,6 +144,57 @@ export class MessageRepository extends Repository {
         .splice(0, query?.limit ?? messages.length);
     } catch (error) {
       return [];
+    }
+  }
+
+  public async update(data: MessageRaw[], instanceName: string, saveDb?: boolean): Promise<IInsert> {
+    try {
+      if (this.dbSettings.ENABLED && saveDb) {
+        this.logger.verbose('updating messages in db');
+
+        const messages = data.map((message) => {
+          return {
+            updateOne: {
+              filter: { 'key.id': message.key.id },
+              update: { ...message },
+            },
+          };
+        });
+
+        const { nModified } = await this.messageModel.bulkWrite(messages);
+
+        this.logger.verbose('messages updated in db: ' + nModified + ' messages');
+        return { insertCount: nModified };
+      }
+
+      this.logger.verbose('updating messages in store');
+
+      const store = this.configService.get<StoreConf>('STORE');
+
+      if (store.MESSAGES) {
+        this.logger.verbose('updating messages in store');
+        data.forEach((message) => {
+          this.writeStore({
+            path: join(this.storePath, 'messages', instanceName),
+            fileName: message.key.id,
+            data: message,
+          });
+          this.logger.verbose(
+            'messages updated in store in path: ' +
+              join(this.storePath, 'messages', instanceName) +
+              '/' +
+              message.key.id,
+          );
+        });
+
+        this.logger.verbose('messages updated in store: ' + data.length + ' messages');
+        return { insertCount: data.length };
+      }
+
+      this.logger.verbose('messages not updated');
+      return { insertCount: 0 };
+    } catch (error) {
+      this.logger.error(error);
     }
   }
 }

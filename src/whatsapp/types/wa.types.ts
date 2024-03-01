@@ -3,6 +3,8 @@ import { AuthenticationState, WAConnectionState } from '@whiskeysockets/baileys'
 
 export enum Events {
   APPLICATION_STARTUP = 'application.startup',
+  INSTANCE_CREATE = 'instance.create',
+  INSTANCE_DELETE = 'instance.delete',
   QRCODE_UPDATED = 'qrcode.updated',
   CONNECTION_UPDATE = 'connection.update',
   STATUS_INSTANCE = 'status.instance',
@@ -80,6 +82,11 @@ export declare namespace wa {
   };
 
   export type LocalRabbitmq = {
+    enabled?: boolean;
+    events?: string[];
+  };
+
+  export type LocalSqs = {
     enabled?: boolean;
     events?: string[];
   };

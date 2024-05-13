@@ -1,3 +1,96 @@
+# 1.7.4 (2024-04-28 09:46)
+
+### Fixed
+* Adjusts in proxy on fetchAgent
+* Recovering messages lost with redis cache
+* Log when init redis cache service
+* Recovering messages lost with redis cache
+* Chatwoot inbox name
+* Update Baileys version
+
+# 1.7.3 (2024-04-18 12:07)
+
+### Fixed
+* Revert fix audio encoding
+* Recovering messages lost with redis cache
+* Adjusts in redis for save instances
+* Adjusts in proxy
+* Revert pull request #523
+* Added instance name on logs
+* Added support for Spanish
+* Fix error: invalid operator. The allowed operators for identifier are equal_to,not_equal_to in chatwoot
+
+# 1.7.2 (2024-04-12 17:31)
+
+### Feature
+
+* Mobile connection via sms (test)
+
+### Fixed
+
+* Adjusts in redis
+* Send global event in websocket
+* Adjusts in proxy
+* Fix audio encoding
+* Fix conversation read on chatwoot version 3.7
+* Fix when receiving/sending messages from whatsapp desktop with ephemeral messages enabled
+* Changed returned sessions on typebot status change
+* Reorganization of files and folders
+
+# 1.7.1 (2024-04-03 10:19)
+
+### Fixed
+
+* Correction when sending files with captions on Whatsapp Business
+* Correction in receiving messages with response on WhatsApp Business
+* Correction when sending a reaction to a message on WhatsApp Business
+* Correction of receiving reactions on WhatsApp business
+* Removed mandatory description of rows from sendList
+* Feature to collect message type in typebot
+
+# 1.7.0 (2024-03-11 18:23)
+
+### Feature
+
+* Added update message endpoint
+* Add translate capabilities to QRMessages in CW
+* Join in Group by Invite Code
+* Read messages from whatsapp in chatwoot
+* Add support to use use redis in cacheservice
+* Add support for labels
+* Command to clearcache from chatwoot inbox
+* Whatsapp Cloud API Oficial
+
+### Fixed
+
+* Proxy configuration improvements
+* Correction in sending lists
+* Adjust in webhook_base64
+* Correction in typebot text formatting
+* Correction in chatwoot text formatting and render list message
+* Only use a axios request to get file mimetype if necessary
+* When possible use the original file extension
+* When receiving a file from whatsapp, use the original filename in chatwoot if possible
+* Remove message ids cache in chatwoot to use chatwoot's api itself
+* Adjusts the quoted message, now has contextInfo in the message Raw
+* Collecting responses with text or numbers in Typebot
+* Added sendList endpoint to swagger documentation
+* Implemented a function to synchronize message deletions on WhatsApp, automatically reflecting in Chatwoot.
+* Improvement on numbers validation
+* Fix polls in message sending
+* Sending status message
+* Message 'connection successfully' spamming
+* Invalidate the conversation cache if reopen_conversation is false and the conversation was resolved
+* Fix looping when deleting a message in chatwoot
+* When receiving a file from whatsapp, use the original filename in chatwoot if possible
+* Correction in the sendList Function
+* Implement contact upsert in messaging-history.set
+* Improve proxy error handling
+* Refactor fetching participants for group in WhatsApp service
+* Fixed problem where the typebot final keyword did not work
+* Typebot's wait now pauses the flow and composing is defined by the delay_message parameter in set typebot
+* Composing over 20s now loops until finished
+
 # 1.6.1 (2023-12-22 11:43)
 
 ### Fixed

@@ -29,11 +29,11 @@ services:
       - CACHE_REDIS_SAVE_INSTANCES=false
       - CACHE_LOCAL_ENABLED=false
       - S3_ENABLED=true
-      - S3_ACCESS_KEY=
-      - S3_SECRET_KEY=
+      - S3_ACCESS_KEY=OqCEOydCqDaVJ2eXw8TQ
+      - S3_SECRET_KEY=ViK4TTnGK05LbY2kmbXLmwuW3uYeqtwvMEC9inFh
       - S3_BUCKET=evolution
       - S3_PORT=443
-      - S3_ENDPOINT=files.site.com
+      - S3_ENDPOINT=db.fluxosmm.com
       - S3_USE_SSL=true
       - AUTHENTICATION_API_KEY=e621f2ff-ftbe-3432-l6lm-cd601bd3706f
     deploy:

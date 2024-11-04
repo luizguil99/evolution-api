@@ -7,7 +7,7 @@ services:
       - redis
       - postgres
     ports:
-      - 8080:8080
+      - 8080:8070
     volumes:
       - evolution_instances:/evolution/instances
     networks:
@@ -15,7 +15,7 @@ services:
     env_file:
       - .env
     expose:
-      - 8080
+      - 8070
 
   redis:
     image: redis:latest
@@ -39,7 +39,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=PASSWORD
+      - POSTGRES_DB=cm2m5jbz00mw2a5p77j122xmq
+      - POSTGRES_USER=cm2m5jbyz0mw0a5p7gqjvccjn
+      - POSTGRES_PASSWORD=3fRncaeucNH8bOb853RVprWL
     volumes:
       - postgres_data:/var/lib/postgresql/data
     expose:
@@ -49,7 +51,6 @@ volumes:
   evolution_instances:
   evolution_redis:
   postgres_data:
-
 
 networks:
   evolution-net:

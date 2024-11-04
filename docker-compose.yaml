@@ -1,57 +1,62 @@
+version: "3.7"
+
 services:
-  api:
-    container_name: evolution_api
-    image: atendai/evolution-api:homolog
-    restart: always
-    depends_on:
-      - redis
-      - postgres
-    ports:
-      - 8080:8080
+  evolution_v2:
+    image: atendai/evolution-api:v2.1.1
     volumes:
       - evolution_instances:/evolution/instances
     networks:
-      - evolution-net
-    env_file:
-      - .env
-    expose:
-      - 8080
-
-  redis:
-    image: redis:latest
-    networks:
-      - evolution-net
-    container_name: redis
-    command: >
-      redis-server --port 6379 --appendonly yes
-    volumes:
-      - evolution_redis:/data
-    ports:
-      - 6379:6379
-
-  postgres:
-    container_name: postgres
-    image: postgres:15
-    networks:
-      - evolution-net
-    command: ["postgres", "-c", "max_connections=1000"]
-    restart: always
-    ports:
-      - 5432:5432
+      - network_public
     environment:
-      - POSTGRES_PASSWORD=PASSWORD
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    expose:
-      - 5432
+      - SERVER_URL=https://api.fluxosmm.com
+      - DEL_INSTANCE=false
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://cm2m5jbyz0mw0a5p7gqjvccjn:3fRncaeucNH8bOb853RVprWL@144.126.151.220:9002/cm2m5jbz00mw2a5p77j122xmq
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - DATABASE_SAVE_DATA_LABELS=true
+      - DATABASE_SAVE_DATA_HISTORIC=true
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_v2
+      - RABBITMQ_ENABLED=false
+      - RABBITMQ_URI=amqp://admin:admin@rabbitmq:5672/default
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://evo_redis:6379/1
+      - CACHE_REDIS_PREFIX_KEY=evolution_v2
+      - CACHE_REDIS_SAVE_INSTANCES=false
+      - CACHE_LOCAL_ENABLED=false
+      - S3_ENABLED=true
+      - S3_ACCESS_KEY=
+      - S3_SECRET_KEY=
+      - S3_BUCKET=evolution
+      - S3_PORT=443
+      - S3_ENDPOINT=files.site.com
+      - S3_USE_SSL=true
+      - AUTHENTICATION_API_KEY=e621f2ff-ftbe-3432-l6lm-cd601bd3706f
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == evolution-manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.evolution_v2.rule=Host(`evo2.site.com`)
+        - traefik.http.routers.evolution_v2.entrypoints=websecure
+        - traefik.http.routers.evolution_v2.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.evolution_v2.service=evolution_v2
+        - traefik.http.services.evolution_v2.loadbalancer.server.port=8080
+        - traefik.http.services.evolution_v2.loadbalancer.passHostHeader=true
 
 volumes:
   evolution_instances:
-  evolution_redis:
-  postgres_data:
-
+    external: true
+    name: evolution_v2_data
 
 networks:
-  evolution-net:
-    name: evolution-net
-    driver: bridge
+  network_public:
+    external: true
+    name: network_public

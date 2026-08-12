@@ -1,3 +1,4 @@
+import { parseProxyPool } from '@utils/proxy-pool';
 import { isBooleanString } from 'class-validator';
 import dotenv from 'dotenv';
 
@@ -368,6 +369,14 @@ export type Proxy = {
   PROTOCOL?: string;
   USERNAME?: string;
   PASSWORD?: string;
+  /** Sticky proxy pool — one free entry auto-assigned per new instance */
+  POOL?: Array<{
+    host: string;
+    port: string;
+    protocol: string;
+    username?: string;
+    password?: string;
+  }>;
 };
 
 export type AudioConverter = {
@@ -887,6 +896,14 @@ export class ConfigService {
         PROTOCOL: process.env?.PROXY_PROTOCOL,
         USERNAME: process.env?.PROXY_USERNAME,
         PASSWORD: process.env?.PROXY_PASSWORD,
+        POOL: (() => {
+          try {
+            return parseProxyPool(process.env?.PROXY_POOL);
+          } catch (error) {
+            console.error('Failed to parse PROXY_POOL:', error);
+            return [];
+          }
+        })(),
       },
       AUDIO_CONVERTER: {
         API_URL: process.env?.API_AUDIO_CONVERTER,

@@ -7,9 +7,10 @@ import { CacheService } from '@api/services/cache.service';
 import { WAMonitoringService } from '@api/services/monitor.service';
 import { SettingsService } from '@api/services/settings.service';
 import { Events, Integration, wa } from '@api/types/wa.types';
-import { Auth, Chatwoot, ConfigService, HttpServer, WaBusiness } from '@config/env.config';
+import { Auth, Chatwoot, ConfigService, HttpServer, Proxy, WaBusiness } from '@config/env.config';
 import { Logger } from '@config/logger.config';
 import { BadRequestException, InternalServerErrorException, UnauthorizedException } from '@exceptions';
+import { proxyPoolKey } from '@utils/proxy-pool';
 import { delay } from 'baileys';
 import { isArray, isURL } from 'class-validator';
 import EventEmitter2 from 'eventemitter2';
@@ -33,6 +34,41 @@ export class InstanceController {
   ) {}
 
   private readonly logger = new Logger('InstanceController');
+
+  /**
+   * Assign the next unused sticky proxy from PROXY_POOL (one sid per instance).
+   * Skipped when PROXY_POOL is empty. Throws if the pool is exhausted.
+   */
+  private async assignProxyFromPool(instanceDto: InstanceDto): Promise<void> {
+    const pool = this.configService.get<Proxy>('PROXY').POOL || [];
+    if (!pool.length) {
+      return;
+    }
+
+    const used = await this.prismaRepository.proxy.findMany({
+      where: { enabled: true },
+      select: { host: true, port: true, username: true },
+    });
+    const usedKeys = new Set(used.map((p) => proxyPoolKey(p)));
+
+    const next = pool.find((entry) => !usedKeys.has(proxyPoolKey(entry)));
+    if (!next) {
+      throw new BadRequestException(
+        `No free proxy left in PROXY_POOL (${pool.length} configured, all in use). Add more sticky sids or delete unused instances.`,
+      );
+    }
+
+    this.logger.log(`Auto-assigning proxy from pool: ${next.host}:${next.port} (${next.username})`);
+
+    await this.proxyService.createProxy(instanceDto, {
+      enabled: true,
+      host: next.host,
+      port: next.port,
+      protocol: next.protocol || 'http',
+      username: next.username,
+      password: next.password,
+    });
+  }
 
   public async createInstance(instanceData: InstanceDto) {
     try {
@@ -120,6 +156,8 @@ export class InstanceController {
           username: instanceData.proxyUsername,
           password: instanceData.proxyPassword,
         });
+      } else {
+        await this.assignProxyFromPool(instanceDto);
       }
 
       const settings: wa.LocalSettings = {

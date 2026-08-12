@@ -366,7 +366,9 @@ export class ChannelStartupService {
     this.localProxy.enabled = false;
 
     const proxyConfig = this.configService.get<Proxy>('PROXY');
-    if (proxyConfig.HOST) {
+    // When PROXY_POOL is configured, do not force the single global PROXY_HOST on every instance.
+    // Each instance should get its own sticky entry (auto-assigned on create or set via API).
+    if (proxyConfig.HOST && !(proxyConfig.POOL && proxyConfig.POOL.length > 0)) {
       this.localProxy.enabled = true;
       this.localProxy.host = proxyConfig.HOST;
       this.localProxy.port = proxyConfig.PORT || '80';

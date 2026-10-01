@@ -50,7 +50,10 @@ PROXY_POOL=IP:PORT:http:USER:PASS,IP2:PORT:http:USER:PASS
 - Instâncias antigas mantêm o proxy salvo no banco (tabela `Proxy`) mesmo se ele sair do `PROXY_POOL`.
   Para trocar: `POST /proxy/set/{instance}` com `{enabled,host,port,protocol,username,password}` e depois
   desconectar/reconectar o QR (evita o número "pular" de IP no meio da sessão).
-- Reiniciar a API após mudar o `.env`.
+- **Produção (Coolify) não lê o `.env` local**: atualizar a env `PROXY_POOL` do serviço no Coolify e reiniciar
+  (passo a passo na skill `deploy-coolify`). Localmente, reiniciar a API após mudar o `.env`.
+- Trocar o IP de um número já pareado (ex.: residencial que mudou de IP, ou restart da API) pode gerar
+  `LOGOUT` → re-parear o QR já no proxy novo.
 
 ## Consultar quais proxies estão em uso (API)
 `GET /proxy/pool` com header `apikey: <AUTHENTICATION_API_KEY global>` → retorna

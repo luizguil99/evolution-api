@@ -1,6 +1,7 @@
 import { RouterBroker } from '@api/abstract/abstract.router';
 import { InstanceDto } from '@api/dto/instance.dto';
 import { ProxyDto } from '@api/dto/proxy.dto';
+import { authGuard } from '@api/guards/auth.guard';
 import { proxyController } from '@api/server.module';
 import { instanceSchema, proxySchema } from '@validate/validate.schema';
 import { RequestHandler, Router } from 'express';
@@ -11,6 +12,12 @@ export class ProxyRouter extends RouterBroker {
   constructor(...guards: RequestHandler[]) {
     super();
     this.router
+      // Global route (no instanceName): requires the global AUTHENTICATION_API_KEY
+      .get('/pool', authGuard['apikey'], async (req, res) => {
+        const response = await proxyController.poolStatus();
+
+        res.status(HttpStatus.OK).json(response);
+      })
       .post(this.routerPath('set'), ...guards, async (req, res) => {
         const response = await this.dataValidate<ProxyDto>({
           request: req,
